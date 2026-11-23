@@ -1,0 +1,10 @@
+node_modules/
+.env*
+config.json
+*.log
+*.pem
+*.key
+*.pfx
+*.p12
+*.cer
+*.crt

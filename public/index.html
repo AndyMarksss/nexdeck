@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101019">
+  <title>NexDeck — Painel OBS</title>
+  <link rel="icon" type="image/png" href="/icon-192.png?v=3">
+  <link rel="apple-touch-icon" href="/icon-192.png?v=3">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="masthead">
+      <a class="brand" href="/" aria-label="NexDeck">
+        <img src="/icon.svg?v=3" alt="" width="38" height="38"><span>NexDeck<span class="cursor">_</span></span>
+      </a>
+      <div class="mast-actions">
+        <p id="status" class="status" role="status">Conectando…</p>
+        <button id="install" class="icon-button" aria-label="Instalar app" title="Instalar app" hidden><i class="ico download" aria-hidden="true"></i></button>
+        <button id="open-help" class="icon-button" aria-label="Tutorial" title="Tutorial"><i class="ico help" aria-hidden="true"></i></button>
+      </div>
+    </header>
+    <main id="painel">
+      <p id="notice" role="status" hidden></p>
+      <section class="host" aria-labelledby="host-title">
+        <div class="host-hero">
+          <div>
+            <p class="caption">CONFIGURAÇÃO NO COMPUTADOR</p>
+            <h1 id="host-title">Conecte seu OBS.<br><span>Controle pelo celular.</span></h1>
+            <p id="obs-version" class="version"><i class="ico signal" aria-hidden="true"></i><span>OBS Studio 28+ · WebSocket 5</span></p>
+          </div>
+          <div class="host-art" aria-hidden="true"><img src="/icon.svg?v=3" alt="" width="100" height="100"></div>
+        </div>
+        <div class="host-steps">
+          <section class="host-card" aria-labelledby="setup-title">
+            <span class="step-number"><i class="ico gear" aria-hidden="true"></i></span>
+            <div>
+              <h2 id="setup-title">1. Conectar o OBS</h2>
+              <p id="host-connection">No OBS, abra <strong>Ferramentas → Configurações do servidor WebSocket</strong>. Ative o servidor (porta 4455) e copie a senha.</p>
+              <div class="start-actions">
+                <button id="start-connect" class="primary" disabled>Inserir senha do OBS</button>
+                <button id="host-guide" class="quiet">Ver passo a passo</button>
+              </div>
+            </div>
+          </section>
+          <section id="pair-panel" class="host-card" aria-labelledby="pair-title">
+            <span class="step-number"><i class="ico qr-icon" aria-hidden="true"></i></span>
+            <div>
+              <h2 id="pair-title" tabindex="-1">2. Parear o celular</h2>
+              <p id="pwa-trust" class="muted" hidden>Primeira instalação no celular: <a href="/pwa-ca.cer" download>baixe o certificado NexDeck</a> no computador, transfira e instale como certificado CA no Android. Depois escaneie o QR.</p>
+              <p id="pair-wait">O QR aparece aqui assim que o OBS estiver conectado.</p>
+              <div id="pair-content" hidden>
+                <div class="pair-inner">
+                  <div>
+                    <p>No celular, conecte-se à mesma rede do computador. Abra a câmera, aponte para o QR e toque no link que aparecer.</p>
+                    <label for="address">Endereço nesta rede</label>
+                    <select id="address"></select>
+                  </div>
+                  <img id="qr" width="192" height="192" alt="QR code de pareamento do NexDeck" hidden>
+                </div>
+              </div>
+              <p id="no-lan" hidden>A rede local está desativada. Reinicie com <code>npm start -- --lan</code> e conecte o OBS novamente.</p>
+              <p id="pair-error" role="status" hidden></p>
+              <button id="pair-retry" class="quiet" hidden>Tentar gerar QR de novo</button>
+            </div>
+          </section>
+        </div>
+      </section>
+      <section class="remote" aria-label="Controle remoto">
+        <div id="start" class="start-panel" hidden>
+          <div class="overview-icon"><i class="ico qr-icon" aria-hidden="true"></i></div>
+          <div class="start-copy">
+            <h1 id="start-title">Conecte ao computador</h1>
+            <p id="start-description">Abra o NexDeck no PC e escaneie o QR de pareamento com a câmera do celular.</p>
+            <div class="start-actions"><button id="start-guide" class="primary">Como parear</button></div>
+          </div>
+        </div>
+        <section id="overview" class="overview" aria-label="Sessão do OBS" hidden>
+          <div class="overview-icon"><i class="ico layers" aria-hidden="true"></i></div>
+          <div class="scene-summary"><span class="caption">CENA ATIVA</span><h1 id="current-scene">Sem cena ativa</h1></div>
+          <div id="session" class="session"><span id="record-status"></span><span id="live-status"></span></div>
+        </section>
+        <div id="controls" hidden>
+          <section class="panel" aria-labelledby="deck-title">
+            <div class="deck-heading"><h2 id="deck-title">Ações</h2><div class="deck-tools"><div id="pager" class="pager" hidden>
+              <button id="previous-page" class="icon-button" aria-label="Página anterior"><i class="ico prev-icon" aria-hidden="true"></i></button>
+              <span id="page-number" role="status"></span>
+              <button id="next-page" class="icon-button" aria-label="Próxima página"><i class="ico next-icon" aria-hidden="true"></i></button>
+            </div><button id="edit-tab" type="button" class="icon-button" aria-label="Editar aba Ações"><i class="ico pencil" aria-hidden="true"></i></button></div></div>
+            <div id="outputs" class="grid" aria-label="Ações"></div>
+            <div id="scenes" class="grid" aria-label="Cenas" hidden></div>
+            <div id="audio" class="grid" aria-label="Áudio" hidden></div>
+            <p id="empty" class="muted" hidden></p>
+            <section id="settings-panel" class="settings-panel" aria-label="Aparência" hidden>
+              <fieldset><legend>Tema</legend><div class="theme-options">
+                <label><input type="radio" name="theme" value="dark"><span><i class="ico moon" aria-hidden="true"></i> Escuro</span></label>
+                <label><input type="radio" name="theme" value="light"><span><i class="ico sun" aria-hidden="true"></i> Claro</span></label>
+              </div></fieldset>
+              <fieldset><legend>Cor de destaque</legend><div class="accent-options">
+                <label><input type="radio" name="accent" value="violet"><span class="violet">Violeta</span></label>
+                <label><input type="radio" name="accent" value="cyan"><span class="cyan">Ciano</span></label>
+                <label><input type="radio" name="accent" value="lime"><span class="lime">Verde</span></label>
+              </div></fieldset>
+              <div class="density-field"><label for="density">Tamanho dos botões</label><select id="density"><option value="comfortable">Confortável</option><option value="compact">Compacto</option></select></div>
+            </section>
+
+          </section>
+        </div>
+      </section>
+    </main>
+    <nav id="dock" class="dock" aria-label="Controles do celular" hidden>
+      <button data-group="outputs" aria-pressed="true"><i class="ico bolt" aria-hidden="true"></i>Ações</button>
+      <button data-group="scenes" aria-pressed="false"><i class="ico layers" aria-hidden="true"></i>Cenas</button>
+      <button data-group="audio" aria-pressed="false"><i class="ico volume" aria-hidden="true"></i>Áudio</button>
+      <button data-group="settings" aria-pressed="false"><i class="ico gear" aria-hidden="true"></i>Configurações</button>
+    </nav>
+  </div>
+
+  <dialog id="help-dialog" class="guide" aria-labelledby="help-title">
+    <form method="dialog" class="dialog-head"><h2 id="help-title">Guia do NexDeck</h2><button class="icon-button" aria-label="Fechar tutorial"><i class="ico close" aria-hidden="true"></i></button></form>
+    <p id="guide-count" class="caption"></p>
+    <progress id="guide-progress" max="5" value="1" aria-label="Progresso do tutorial"></progress>
+    <section class="guide-step" data-device="desktop" hidden>
+      <h3 tabindex="-1">Abra o OBS Studio</h3>
+      <ol>
+        <li>No computador, procure <strong>OBS Studio</strong> no menu Iniciar do Windows.</li>
+        <li>Abra o OBS e deixe a janela aberta. A lista <strong>Cenas</strong> fica normalmente no canto inferior esquerdo.</li>
+      </ol>
+      <p class="guide-tip">Já está com o OBS aberto? Clique em <strong>Próximo</strong>.</p>
+    </section>
+    <section class="guide-step" data-device="desktop" hidden>
+      <h3 tabindex="-1">Encontre os ajustes do WebSocket</h3>
+      <ol>
+        <li>Na barra superior da janela do <strong>OBS</strong>, clique em <strong>Ferramentas</strong>.</li>
+        <li>Clique em <strong>Configurações do servidor WebSocket</strong>. O WebSocket permite que o NexDeck envie comandos ao OBS.</li>
+      </ol>
+      <div class="guide-example" aria-label="Caminho no menu do OBS"><span>Ferramentas</span><i class="ico next-icon" aria-hidden="true"></i><span>Configurações do servidor WebSocket</span></div>
+    </section>
+    <section class="guide-step" data-device="desktop" hidden>
+      <h3 tabindex="-1">Habilite o servidor e copie a senha</h3>
+      <ol>
+        <li>Marque <strong>Ativar servidor WebSocket</strong>. Confira se a porta é <strong>4455</strong>, que é o padrão do NexDeck.</li>
+        <li>Mantenha <strong>Habilitar autenticação</strong> marcada. Em <strong>Mostrar informações da conexão</strong>, use <strong>Copiar</strong> ao lado de <strong>Senha do servidor</strong>.</li>
+        <li>Confirme as alterações com <strong>Aplicar</strong> ou <strong>OK</strong> e volte para esta janela.</li>
+      </ol>
+      <p class="guide-tip">Se precisar, você pode definir a senha na própria janela de configurações do WebSocket no OBS.</p>
+    </section>
+    <section class="guide-step" data-device="desktop" hidden>
+      <h3 tabindex="-1">Conecte o NexDeck ao OBS</h3>
+      <p>Deixe o OBS aberto. Cole abaixo a senha que você copiou do WebSocket e clique em <strong>Conectar ao OBS</strong>.</p>
+      <form id="guide-connect" class="guide-connect">
+        <label for="guide-password">Senha do WebSocket do OBS</label>
+        <input type="password" id="guide-password" autocomplete="off">
+        <button id="guide-connect-button" type="submit" class="primary" disabled>Conectar ao OBS</button>
+      </form>
+      <p id="guide-connected" class="guide-tip" hidden><strong>OBS conectado.</strong> O QR está pronto na tela de configuração se o modo de rede local estiver ativo.</p>
+      <p id="guide-connection-message" role="status" class="guide-feedback"></p>
+    </section>
+    <section class="guide-step" data-device="mobile" hidden>
+      <h3 tabindex="-1">Pareie com o NexDeck no PC</h3>
+      <ol>
+        <li>Conecte o celular à mesma rede do computador.</li>
+        <li>No NexDeck do computador, siga a etapa <strong>Conectar o OBS</strong>.</li>
+        <li>No computador, procure a etapa <strong>Parear o celular</strong>. Com a câmera do celular, escaneie o QR e toque no link.</li>
+      </ol>
+      <p class="guide-tip">Se você já abriu o painel pelo QR e vê <strong>OBS conectado</strong>, pode ir para o próximo passo.</p>
+    </section>
+    <section class="guide-step" data-device="mobile" hidden>
+      <h3 tabindex="-1">Faça seu primeiro teste</h3>
+      <ol>
+        <li>Abra o painel, toque em uma opção em <strong>Cenas</strong> e confira se ela fica destacada no NexDeck e ativa no OBS.</li>
+        <li>Na aba <strong>Ações</strong>, selecione <strong>Iniciar gravação</strong>. Aguarde alguns segundos e selecione <strong>Parar gravação</strong>.</li>
+        <li>No OBS, acesse <strong>Arquivo → Mostrar gravações</strong> para abrir o clipe.</li>
+      </ol>
+      <p class="guide-tip">Use as abas inferiores para alternar entre Ações, Cenas e Áudio.</p>
+    </section>
+    <div class="dialog-actions guide-actions">
+      <button type="button" id="guide-back" class="quiet">Voltar</button>
+      <button type="button" id="guide-next" class="primary">Próximo</button>
+    </div>
+  </dialog>
+  <dialog id="custom-dialog" aria-labelledby="custom-title">
+    <form method="dialog" class="dialog-head"><h2 id="custom-title">Editar aba</h2><button class="icon-button" aria-label="Fechar personalização"><i class="ico close" aria-hidden="true"></i></button></form>
+    <p class="muted">Escolha os botões visíveis e use as setas para mudar a ordem.</p>
+    <div id="edit-buttons"></div>
+    <div class="dialog-actions"><button id="reset" class="quiet">Restaurar esta aba</button><form method="dialog"><button class="primary">Concluir</button></form></div>
+  </dialog>
+  <dialog id="live-dialog" aria-labelledby="live-title">
+    <form method="dialog" class="dialog-head"><h2 id="live-title">Iniciar transmissão?</h2><button class="icon-button" aria-label="Cancelar transmissão"><i class="ico close" aria-hidden="true"></i></button></form>
+    <p>A transmissão começará no destino configurado no OBS.</p>
+    <form method="dialog" class="dialog-actions"><button value="cancel" class="quiet">Cancelar</button><button value="confirm" class="primary">Iniciar live</button></form>
+  </dialog>
+</body>
+</html>

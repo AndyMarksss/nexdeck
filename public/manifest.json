@@ -1,0 +1,26 @@
+{
+  "id": "/",
+  "name": "NexDeck — Painel OBS",
+  "short_name": "NexDeck",
+  "description": "Painel local para controlar o OBS Studio.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#101019",
+  "theme_color": "#101019",
+  "icons": [
+    {
+      "src": "/icon-192.png?v=3",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png?v=3",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
