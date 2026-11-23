@@ -24,7 +24,7 @@ No Edge ou Chrome no PC, use **Instalar app** quando aparecer no painel ou a op�
 
 ## Celular pela rede local
 
-O inicializador já abre em modo de rede local. Pelo terminal, execute `npm.cmd run setup` na primeira vez e `npm.cmd start -- --lan` para abrir o painel. No PC, conecte o OBS. A etapa **Parear o celular** mostra o QR automaticamente. Escolha o IPv4 da rede compartilhada com o celular e escaneie. Ao reiniciar o servidor, pareie de novo. Use apenas em uma rede de confiança e mantenha o QR dentro dela.
+O inicializador já abre em modo de rede local. Pelo terminal, execute `npm.cmd run setup` na primeira vez e `npm.cmd start -- --lan` para abrir o painel. No PC, conecte o OBS. A etapa **Parear o celular** mostra o QR automaticamente. Escolha o IPv4 da rede compartilhada com o celular e escaneie. Se o painel já estiver aberto no celular, toque em **Parear nesta tela** para usar o QR sem abrir outra guia. Em HTTP, use **Tirar foto do QR** ou cole o link copiado no computador. O endereço do QR deve ser o mesmo que o painel aberto, incluindo a porta e o protocolo. Use apenas em uma rede de confiança e mantenha o QR dentro dela.
 
 ## Instalar como PWA no Android
 
@@ -42,7 +42,7 @@ O primeiro comando usa o OpenSSL do Git para Windows, quando disponível. Os arq
 3. Conecte o OBS pelo painel no computador. No celular, escaneie o novo QR e abra no Chrome. O endereço começa com `https://`.
 4. No Chrome, abra **⋮ → Instalar e criar atalho → Instalar**. Depois abra o NexDeck pelo ícone na tela inicial.
 
-As preferências são guardadas por endereço. Ao passar de HTTP para HTTPS, configure a aparência no novo endereço. O pareamento continua no app após fechar e reabrir. Quando o servidor reiniciar, escaneie o novo QR se o app pedir. Se o IP mudar ou o certificado vencer, prepare um novo certificado e instale a nova CA no Android.
+As preferências são guardadas por endereço. Ao passar de HTTP para HTTPS, configure a aparência no novo endereço. O pareamento continua no app após fechar e reabrir. Quando o app pedir um novo pareamento, toque em **Parear nesta tela → Ler QR pela câmera** dentro do próprio NexDeck. Se preferir trocar a sessão enquanto estiver conectado, use **Configurações → Parear com o PC**. Se o IP mudar ou o certificado vencer, prepare um novo certificado e instale a nova CA no Android.
 
 O modo `--lan` também está disponível para uso no navegador. Para usar um certificado próprio, configure `NEXDECK_TLS_CERT` e `NEXDECK_TLS_KEY` no modo `--lan`. As portas padrão podem ser alteradas com `NEXDECK_PORT`, `NEXDECK_PWA_PORT` e `NEXDECK_OBS_PORT`.
 

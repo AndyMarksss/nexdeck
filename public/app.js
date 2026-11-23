@@ -1,3 +1,5 @@
+import { setupPairReader } from './pairing.js';
+
 const byId = (id) => document.getElementById(id);
 const desktop = location.hostname === '127.0.0.1';
 const defaults = () => ({ theme: 'dark', accent: 'violet', density: 'comfortable', groups: {} });
@@ -51,8 +53,9 @@ if (!desktop && /^[A-Za-z0-9_-]{32}$/.test(fragment)) {
   history.replaceState(null, '', location.pathname);
 }
 
-async function api(path, data) {
-  const headers = { Authorization: 'Bearer ' + token };
+async function api(path, data, candidate) {
+  const requestToken = candidate ?? token;
+  const headers = { Authorization: 'Bearer ' + requestToken };
   const options = { headers, signal: AbortSignal.timeout(8000) };
   if (data !== undefined) {
     headers['Content-Type'] = 'application/json';
@@ -64,7 +67,7 @@ async function api(path, data) {
   catch { throw new Error('O painel não alcançou o NexDeck. Confira se o servidor está aberto.'); }
   const result = await response.json();
   if (!response.ok) {
-    if (!desktop && response.status === 401) {
+    if (!desktop && candidate === undefined && requestToken === token && response.status === 401) {
       token = '';
       save(localStorage, pairingKey, '');
       save(sessionStorage, pairingKey, '');
@@ -303,7 +306,7 @@ function render(state) {
   byId('start-title').textContent = token ? 'Aguardando o OBS' : 'Conecte ao computador';
   byId('start-description').textContent = token
     ? 'No computador, conecte o OBS no NexDeck. Os controles aparecerão aqui.'
-    : 'Abra o NexDeck no PC e escaneie o QR de pareamento com a câmera do celular.';
+    : 'Abra o NexDeck no PC e use o QR de pareamento nesta tela.';
   byId('overview').hidden = !state.connected;
   byId('controls').hidden = !state.connected;
   byId('dock').hidden = !state.connected;
@@ -408,13 +411,25 @@ async function updatePair() {
   const qrImage = byId('qr');
   const feedback = byId('pair-error');
   qrImage.hidden = true;
+  byId('copy-pair').hidden = true;
+  byId('copy-pair-message').textContent = '';
   feedback.hidden = true;
   byId('pair-retry').hidden = true;
   try {
-    const { qr } = await api('pair?address=' + encodeURIComponent(address));
+    const { qr, url } = await api('pair?address=' + encodeURIComponent(address));
     if (!latestState?.connected || address !== byId('address').value) return;
     qrImage.src = qr;
     qrImage.hidden = false;
+    const copy = byId('copy-pair');
+    copy.hidden = !navigator.clipboard;
+    copy.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        byId('copy-pair-message').textContent = 'Link copiado.';
+      } catch {
+        byId('copy-pair-message').textContent = 'Não foi possível copiar. Use o QR.';
+      }
+    };
   } catch (error) {
     if (!latestState?.connected || address !== byId('address').value) return;
     feedback.textContent = error.message;
@@ -560,8 +575,59 @@ function setupUi() {
   byId('pair-retry').onclick = () => void updatePair();
 }
 
+let polling = false;
+async function pollState() {
+  if (polling) return;
+  polling = true;
+  try {
+    while (token) {
+      await refresh();
+      if (token) await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
+  } finally {
+    polling = false;
+  }
+}
+
+function storePairing(newToken) {
+  token = newToken;
+  save(localStorage, pairingKey, newToken);
+  save(sessionStorage, pairingKey, newToken);
+}
+
+async function applyPairing(value) {
+  let link;
+  try { link = new URL(value.trim()); }
+  catch { throw new Error('Use o link completo do QR mostrado no NexDeck do computador.'); }
+  const candidate = link.hash.slice(1);
+  if (!/^[A-Za-z0-9_-]{32}$/.test(candidate) || link.pathname !== '/' || link.search || link.username || link.password) {
+    throw new Error('Esse QR não é um link de pareamento do NexDeck.');
+  }
+  if (link.origin !== location.origin) {
+    throw new Error('Esse QR usa outro endereço. Abra o endereço indicado no PC uma vez para instalar ou acessar esse NexDeck.');
+  }
+  const state = await api('state', undefined, candidate);
+  storePairing(candidate);
+  refreshSequence += 1;
+  notice();
+  render(state);
+  void pollState();
+}
+
 async function init() {
   setupUi();
+  if (!desktop) {
+    const openPairReader = setupPairReader(applyPairing);
+    byId('pair-open').onclick = openPairReader;
+    byId('pair-again').onclick = openPairReader;
+    window.addEventListener('storage', (event) => {
+      if (event.key === pairingKey && event.newValue && event.newValue !== token) {
+        storePairing(event.newValue);
+        if (polling) void refresh();
+        else void pollState();
+      }
+    });
+  }
   if (desktop) {
     while (!token) {
       try {
@@ -580,14 +646,11 @@ async function init() {
   } else if (!token) {
     byId('start').hidden = false;
     byId('status').textContent = 'Celular sem pareamento';
-    notice('No computador, escaneie o QR da etapa Parear o celular.');
+    notice('Toque em Parear nesta tela e use o QR do computador.');
     return;
   }
   if (!desktop) save(localStorage, pairingKey, token);
-  while (token) {
-    await refresh();
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-  }
+  void pollState();
 }
 
 init().catch((error) => notice(error.message));

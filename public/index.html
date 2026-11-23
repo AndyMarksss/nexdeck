@@ -55,9 +55,11 @@
               <div id="pair-content" hidden>
                 <div class="pair-inner">
                   <div>
-                    <p>No celular, conecte-se à mesma rede do computador. Abra a câmera, aponte para o QR e toque no link que aparecer.</p>
+                    <p>No celular, conecte-se à mesma rede. Para o primeiro acesso, abra o QR com a câmera. Se o painel já estiver aberto, toque em <strong>Parear nesta tela</strong> nele.</p>
                     <label for="address">Endereço nesta rede</label>
                     <select id="address"></select>
+                    <button id="copy-pair" class="quiet" type="button" hidden>Copiar link de pareamento</button>
+                    <p id="copy-pair-message" role="status"></p>
                   </div>
                   <img id="qr" width="192" height="192" alt="QR code de pareamento do NexDeck" hidden>
                 </div>
@@ -74,8 +76,8 @@
           <div class="overview-icon"><i class="ico qr-icon" aria-hidden="true"></i></div>
           <div class="start-copy">
             <h1 id="start-title">Conecte ao computador</h1>
-            <p id="start-description">Abra o NexDeck no PC e escaneie o QR de pareamento com a câmera do celular.</p>
-            <div class="start-actions"><button id="start-guide" class="primary">Como parear</button></div>
+            <p id="start-description">Abra o NexDeck no PC e use o QR de pareamento nesta tela.</p>
+            <div class="start-actions"><button id="pair-open" class="primary">Parear nesta tela</button><button id="start-guide" class="quiet">Como parear</button></div>
           </div>
         </div>
         <section id="overview" class="overview" aria-label="Sessão do OBS" hidden>
@@ -94,7 +96,7 @@
             <div id="scenes" class="grid" aria-label="Cenas" hidden></div>
             <div id="audio" class="grid" aria-label="Áudio" hidden></div>
             <p id="empty" class="muted" hidden></p>
-            <section id="settings-panel" class="settings-panel" aria-label="Aparência" hidden>
+            <section id="settings-panel" class="settings-panel" aria-label="Preferências do NexDeck" hidden>
               <fieldset><legend>Tema</legend><div class="theme-options">
                 <label><input type="radio" name="theme" value="dark"><span><i class="ico moon" aria-hidden="true"></i> Escuro</span></label>
                 <label><input type="radio" name="theme" value="light"><span><i class="ico sun" aria-hidden="true"></i> Claro</span></label>
@@ -105,6 +107,7 @@
                 <label><input type="radio" name="accent" value="lime"><span class="lime">Verde</span></label>
               </div></fieldset>
               <div class="density-field"><label for="density">Tamanho dos botões</label><select id="density"><option value="comfortable">Confortável</option><option value="compact">Compacto</option></select></div>
+              <button id="pair-again" class="quiet" type="button">Parear com o PC</button>
             </section>
 
           </section>
@@ -118,6 +121,23 @@
       <button data-group="settings" aria-pressed="false"><i class="ico gear" aria-hidden="true"></i>Configurações</button>
     </nav>
   </div>
+
+  <dialog id="mobile-pair" aria-labelledby="mobile-pair-title">
+    <form method="dialog" class="dialog-head"><h2 id="mobile-pair-title">Parear com o PC</h2><button class="icon-button" aria-label="Fechar pareamento"><i class="ico close" aria-hidden="true"></i></button></form>
+    <p class="muted">Use o QR da etapa <strong>Parear o celular</strong> no painel do computador.</p>
+    <div class="pair-methods">
+      <button id="scan-camera" class="primary" type="button" hidden><i class="ico qr-icon" aria-hidden="true"></i> Ler QR pela câmera</button>
+      <button id="scan-photo-button" class="quiet" type="button">Tirar foto do QR</button>
+      <input id="scan-photo" type="file" accept="image/*" capture="environment" hidden>
+    </div>
+    <video id="scan-preview" playsinline muted hidden></video>
+    <form id="pair-form">
+      <label for="pair-url">Ou cole o link do QR</label>
+      <input id="pair-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" required>
+      <button id="pair-submit" class="quiet" type="submit">Conectar nesta tela</button>
+    </form>
+    <p id="mobile-pair-message" role="status"></p>
+  </dialog>
 
   <dialog id="help-dialog" class="guide" aria-labelledby="help-title">
     <form method="dialog" class="dialog-head"><h2 id="help-title">Guia do NexDeck</h2><button class="icon-button" aria-label="Fechar tutorial"><i class="ico close" aria-hidden="true"></i></button></form>
@@ -164,7 +184,7 @@
       <ol>
         <li>Conecte o celular à mesma rede do computador.</li>
         <li>No NexDeck do computador, siga a etapa <strong>Conectar o OBS</strong>.</li>
-        <li>No computador, procure a etapa <strong>Parear o celular</strong>. Com a câmera do celular, escaneie o QR e toque no link.</li>
+        <li>Feche este guia, toque em <strong>Parear nesta tela</strong> e use o QR da etapa <strong>Parear o celular</strong> no computador.</li>
       </ol>
       <p class="guide-tip">Se você já abriu o painel pelo QR e vê <strong>OBS conectado</strong>, pode ir para o próximo passo.</p>
     </section>

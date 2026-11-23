@@ -1,5 +1,5 @@
-const cacheName = 'nexdeck-shell-v6';
-const shell = ['/', '/app.js', '/style.css', '/icon.svg', '/icon-192.png',
+const cacheName = 'nexdeck-shell-v7';
+const shell = ['/', '/app.js', '/pairing.js', '/qr-decoder.js', '/style.css', '/icon.svg', '/icon-192.png',
   '/icon-512.png', '/manifest.json', '/fa-solid-900.woff2'];
 
 self.addEventListener('install', (event) => {

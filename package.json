@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check public/app.js && node --check setup.js && node --check public/sw.js && node --check prepare-pwa.js && node --check start-local.js",
+    "check": "node --check server.js && node --check public/app.js && node --check public/pairing.js && node --check setup.js && node --check public/sw.js && node --check prepare-pwa.js && node --check start-local.js",
     "setup": "node setup.js",
     "pwa:prepare": "node prepare-pwa.js"
   },
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "6.7.2",
+    "jsqr": "1.4.0",
     "obs-websocket-js": "^5.0.6",
     "qrcode": "^1.5.4"
   }

@@ -606,3 +606,9 @@ main { width: min(100%, 69rem); padding: clamp(1rem, 3vw, 2rem); }
 @media (prefers-reduced-motion: reduce) {
   .remote .enter { animation: none; }
 }
+
+.pair-methods { display: flex; gap: .5rem; flex-wrap: wrap; margin-block: 1rem; }
+#scan-preview { display: block; width: 100%; max-height: 45dvh; object-fit: contain; border-radius: .65rem; background: #000; }
+#pair-form button { margin-top: .5rem; }
+#mobile-pair-message:not(:empty), #copy-pair-message:not(:empty) { margin-top: .65rem; }
+#copy-pair { margin-top: .5rem; }

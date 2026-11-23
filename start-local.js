@@ -7,6 +7,7 @@ import { dependencyDirectory, dependencyManifest } from './dependency-path.js';
 const dependencyFiles = [
   join(dependencyDirectory, 'node_modules', 'obs-websocket-js', 'package.json'),
   join(dependencyDirectory, 'node_modules', 'qrcode', 'package.json'),
+  join(dependencyDirectory, 'node_modules', 'jsqr', 'dist', 'jsQR.js'),
   join(dependencyDirectory, 'node_modules', '@fortawesome', 'fontawesome-free', 'webfonts', 'fa-solid-900.woff2'),
 ];
 

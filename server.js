@@ -62,6 +62,7 @@ const allowedHosts = new Set([desktopHost, ...lanUrls.map((url) => url.host)]);
 const assets = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
   ['/app.js', ['app.js', 'text/javascript; charset=utf-8']],
+  ['/pairing.js', ['pairing.js', 'text/javascript; charset=utf-8']],
   ['/style.css', ['style.css', 'text/css; charset=utf-8']],
   ['/manifest.json', ['manifest.json', 'application/manifest+json']],
   ['/sw.js', ['sw.js', 'text/javascript; charset=utf-8']],
@@ -211,6 +212,10 @@ async function handleRequest(request, response) {
       const data = await readFile(new URL('./public/' + file, import.meta.url));
       response.writeHead(200, { 'Content-Type': type });
       response.end(data);
+    } else if (request.method === 'GET' && path === '/qr-decoder.js') {
+      const script = await readFile(require.resolve('jsqr'));
+      response.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8' });
+      response.end(script);
     } else if (request.method === 'GET' && path === '/fa-solid-900.woff2') {
       const font = join(dependencyDirectory, 'node_modules', '@fortawesome', 'fontawesome-free', 'webfonts', 'fa-solid-900.woff2');
       const data = await readFile(font);
