@@ -636,7 +636,7 @@ async function init() {
         byId('start-connect').disabled = false;
         syncGuideConnection();
         bootAddresses = bootstrap.addresses;
-        byId('pwa-trust').hidden = !bootstrap.pwa;
+        byId('pwa-trust').hidden = !(bootstrap.localCa ?? bootstrap.pwa);
         for (const address of bootAddresses) byId('address').add(new Option(address, address));
       } catch (error) {
         notice(error.message);

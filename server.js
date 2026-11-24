@@ -17,13 +17,19 @@ const pwaAddress = process.argv.find((arg) => arg.startsWith('--pwa='))?.slice(6
 const lan = process.argv.includes('--lan') || pwaAddress !== undefined;
 const port = Number(process.env.NEXDECK_PORT || 3000);
 const obsPort = Number(process.env.NEXDECK_OBS_PORT || 4455);
+const pwaHost = process.env.NEXDECK_PWA_HOST?.toLowerCase();
 const tlsCert = process.env.NEXDECK_TLS_CERT;
 const tlsKey = process.env.NEXDECK_TLS_KEY;
 if (Boolean(tlsCert) !== Boolean(tlsKey)) {
   throw new Error('Informe NEXDECK_TLS_CERT e NEXDECK_TLS_KEY juntos.');
 }
-if (pwaAddress !== undefined && tlsCert) throw new Error('Use --pwa sem NEXDECK_TLS_CERT e NEXDECK_TLS_KEY.');
-const scheme = tlsCert ? 'https://' : 'http://';
+if (pwaHost && (!pwaAddress || !tlsCert || !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.duckdns\.org$/.test(pwaHost))) {
+  throw new Error('Para DuckDNS, informe um subdomínio válido, --pwa com o IP local e os arquivos TLS.');
+}
+if (pwaAddress !== undefined && tlsCert && !pwaHost) {
+  throw new Error('Informe NEXDECK_PWA_HOST para usar um certificado próprio no modo --pwa.');
+}
+const scheme = tlsCert && !pwaAddress ? 'https://' : 'http://';
 const pwaPort = Number(process.env.NEXDECK_PWA_PORT || 3443);
 const desktopHost = new URL(scheme + '127.0.0.1:' + port).host;
 const token = randomBytes(24).toString('base64url');
@@ -55,8 +61,8 @@ const subnets = new Map(lanInterfaces.map(({ address, cidr }) => {
 if (pwaAddress !== undefined && !lanAddresses.includes(pwaAddress)) {
   throw new Error('O endereço de --pwa precisa estar ativo neste computador.');
 }
-const pwaDirectory = pwaAddress && join(pwaRoot, pwaAddress);
-const lanUrls = pwaDirectory ? [new URL('https://' + pwaAddress + ':' + pwaPort)] :
+const pwaDirectory = pwaAddress && !pwaHost && join(pwaRoot, pwaAddress);
+const lanUrls = pwaAddress ? [new URL('https://' + (pwaHost || pwaAddress) + ':' + pwaPort)] :
   lanAddresses.map((ip) => new URL(scheme + ip + ':' + port));
 const allowedHosts = new Set([desktopHost, ...lanUrls.map((url) => url.host)]);
 const assets = new Map([
@@ -199,7 +205,7 @@ async function handleRequest(request, response) {
     const requestScheme = request.socket.encrypted ? 'https://' : 'http://';
     const desktop = host === desktopHost && remote === '127.0.0.1' && requestScheme === scheme;
     const remoteAllowed = privateIPv4(remote || '') && lanUrls.some((url) =>
-      url.origin === requestScheme + host && subnets.get(url.hostname)?.check(remote, 'ipv4'));
+      url.origin === requestScheme + host && subnets.get(pwaAddress || url.hostname)?.check(remote, 'ipv4'));
     if (!allowedHosts.has(host) || (!desktop && !remoteAllowed)) {
       throw new HttpError(403, 'Endereço fora da rede configurada.');
     }
@@ -227,7 +233,7 @@ async function handleRequest(request, response) {
       response.end(certificate);
     } else if (request.method === 'GET' && path === '/api/bootstrap') {
       if (!desktop) throw new HttpError(403, 'Abra o QR de pareamento no computador.');
-      json(200, { token, addresses: lanUrls.map((url) => url.origin), pwa: Boolean(pwaDirectory) });
+      json(200, { token, addresses: lanUrls.map((url) => url.origin), pwa: Boolean(pwaAddress), localCa: Boolean(pwaDirectory) });
     } else if (path.startsWith('/api/')) {
       if (!authorized(request)) throw new HttpError(401, 'Abra novamente o link de pareamento.');
       if (request.method === 'GET' && path === '/api/state') {
@@ -267,20 +273,20 @@ async function handleRequest(request, response) {
   }
 }
 
-const server = tlsCert ? createHttpsServer({
+const server = tlsCert && !pwaAddress ? createHttpsServer({
   cert: await readFile(tlsCert),
   key: await readFile(tlsKey),
 }, handleRequest) : createHttpServer(handleRequest);
 
-if (pwaDirectory) {
+if (pwaAddress) {
   const mobile = createHttpsServer({
-    cert: await readFile(join(pwaDirectory, 'server.pem')),
-    key: await readFile(join(pwaDirectory, 'server.key')),
+    cert: await readFile(tlsCert || join(pwaDirectory, 'server.pem')),
+    key: await readFile(tlsKey || join(pwaDirectory, 'server.key')),
   }, handleRequest);
   await once(mobile.listen(pwaPort, pwaAddress), 'listening');
 }
-await once(server.listen(port, lan && !pwaDirectory ? '0.0.0.0' : '127.0.0.1'), 'listening');
+await once(server.listen(port, lan && !pwaAddress ? '0.0.0.0' : '127.0.0.1'), 'listening');
 console.log('NexDeck: ' + scheme + desktopHost);
-if (pwaDirectory) console.log('PWA: ' + lanUrls[0].origin);
+if (pwaAddress) console.log('PWA: ' + lanUrls[0].origin);
 if (lan && !lanAddresses.length) console.log('Nenhum endereço IPv4 privado encontrado.');
 void connect();
