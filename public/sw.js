@@ -1,4 +1,4 @@
-const cacheName = 'nexdeck-shell-v7';
+const cacheName = 'nexdeck-shell-v8';
 const shell = ['/', '/app.js', '/pairing.js', '/qr-decoder.js', '/style.css', '/icon.svg', '/icon-192.png',
   '/icon-512.png', '/manifest.json', '/fa-solid-900.woff2'];
 

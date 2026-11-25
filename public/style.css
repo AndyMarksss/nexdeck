@@ -292,19 +292,20 @@ main { width: min(100%, 69rem); padding: clamp(1rem, 3vw, 2rem); }
 #pair-retry { margin-top: .6rem; }
 #pair-error { color: var(--record); margin-top: .5rem; }
 
+[data-mode="remote"] body { min-width: 0; }
 [data-mode="remote"] .shell {
   height: 100dvh;
-  max-width: 46rem;
+  max-width: 90rem;
   min-height: 0;
   margin: auto;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
-[data-mode="remote"] .masthead { flex: none; padding: .45rem .75rem; border-radius: 0 0 1rem 1rem; }
+[data-mode="remote"] .masthead { flex: none; flex-wrap: wrap; padding: .45rem .75rem; border-radius: 0 0 1rem 1rem; }
 [data-mode="remote"] .brand { gap: .38rem; font-size: 1.18rem; }
 [data-mode="remote"] .brand img { width: 1.8rem; height: 1.8rem; }
 [data-mode="remote"] .status { font-size: .72rem; padding: .25rem .45rem; white-space: nowrap; }
 [data-mode="remote"] .mast-actions .icon-button { background: #182033; min-width: 2.4rem; padding-inline: .35rem; }
-[data-mode="remote"] main { flex: 1; min-height: 0; padding: .65rem .75rem; display: flex; flex-direction: column; overflow: auto; }
+[data-mode="remote"] main { flex: 1; width: 100%; min-height: 0; padding: .65rem .75rem; display: flex; flex-direction: column; overflow: auto; }
 .remote { min-height: 0; flex: 1; display: flex; flex-direction: column; gap: .65rem; }
 .remote .overview { flex: none; min-height: 0; padding: .65rem .75rem; gap: .65rem; flex-wrap: nowrap; background: radial-gradient(ellipse at 90% 0%, rgb(var(--accent-rgb) / .25), transparent 76%), #151b30; box-shadow: inset 0 1px #ffffff13; }
 .remote .overview-icon { width: 2.5rem; height: 2.5rem; }
@@ -314,14 +315,13 @@ main { width: min(100%, 69rem); padding: clamp(1rem, 3vw, 2rem); }
 .remote .session span { font-size: .67rem; text-align: center; padding: .18rem .4rem; }
 .session .on::before { content: ""; display: inline-block; background: currentColor; width: .32rem; height: .32rem; border-radius: 50%; margin-inline-end: .3rem; animation: record-glow 1.8s ease-in-out infinite alternate; }
 @keyframes record-glow { from { box-shadow: 0 0 0 transparent; } to { box-shadow: 0 0 8px currentColor; } }
-#controls { flex: 1; min-height: 0; }
+#controls { flex: 1; min-height: 10rem; container-type: inline-size; }
 .remote .panel { margin: 0; padding: .65rem; min-height: 0; display: flex; flex-direction: column; gap: .5rem; box-shadow: inset 0 1px #ffffff12; }
 .deck-heading, .pager { display: flex; align-items: center; gap: .45rem; }
 .deck-heading { justify-content: space-between; min-height: 2.5rem; }
 .deck-heading h2 { margin: 0; font-size: 1.12rem; }
 .pager { font-size: .8rem; color: var(--muted); }
 .pager .icon-button { min-width: 2.4rem; min-height: 2.4rem; padding: .35rem; }
-.remote .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
 .remote .tile {
   position: relative;
   min-height: clamp(3.75rem, 12dvh, 6.75rem);
@@ -341,7 +341,6 @@ main { width: min(100%, 69rem); padding: clamp(1rem, 3vw, 2rem); }
 .remote .tile:active { transform: translateY(2px) scale(.98); box-shadow: 0 1px #090e1b; }
 .remote .grid.enter { animation: deck-enter .19s ease-out both; }
 @keyframes deck-enter { from { opacity: .4; transform: translateY(.3rem); } }
-[data-density="compact"] .remote .tile { min-height: 3.75rem; }
 .dock { flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .3rem; padding: .35rem .75rem .5rem; border-top: 1px solid var(--line); background: #101525; }
 .dock button { display: grid; place-items: center; gap: .2rem; min-height: 3.15rem; padding: .3rem; color: var(--muted); background: none; border: 1px solid transparent; border-radius: .7rem; font-size: .72rem; touch-action: manipulation; }
 .dock button[aria-pressed="true"] { color: var(--ink); border-color: rgb(var(--accent-rgb) / .4); background: rgb(var(--accent-rgb) / .16); }
@@ -352,81 +351,77 @@ main { width: min(100%, 69rem); padding: clamp(1rem, 3vw, 2rem); }
   .host-steps { grid-template-columns: 1fr; }
   .pair-inner { grid-template-columns: 1fr; }
 }
-@media (max-height: 480px) {
-  .remote .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .remote .tile { min-height: 3.8rem; padding: .35rem .45rem; }
-  .remote .tile .ico { margin: 0; width: 1.35rem; height: 1.35rem; }
-  .remote .tile strong { font-size: .8rem; }
-  .remote .overview { padding-block: .4rem; }
-}
 @media (prefers-reduced-motion: reduce) {
   .host-art img, .session .on::before, .remote .grid.enter { animation: none; }
 }
 
-/* The remote is an adaptive touch surface in both orientations. */
-.remote { --deck-max-columns: 3; --deck-max-rows: 3; }
+
+.remote {
+  --deck-max-columns: 3;
+  --deck-max-rows: 4;
+  --deck-tile-width: 8rem;
+  --deck-row-min: 5rem;
+}
+[data-density="compact"] .remote { --deck-row-min: 3.85rem; }
 #controls .panel { height: 100%; }
 .remote .grid {
+  position: relative;
   flex: 1;
   min-height: 0;
-  grid-template-columns: repeat(var(--deck-columns, 2), minmax(0, 1fr));
-  grid-auto-columns: 7.25rem;
-  grid-auto-rows: 4.7rem;
+  overflow: auto;
+  padding: .125rem;
+  gap: .5rem;
+  grid-template-columns: repeat(var(--deck-columns, 1), minmax(0, 1fr));
+  grid-auto-columns: var(--deck-tile-width);
+  grid-auto-rows: minmax(var(--deck-row-min), max-content);
   align-content: start;
 }
-.remote .grid[data-columns="1"] { --deck-columns: 1; }
 .remote .grid[data-columns="2"] { --deck-columns: 2; }
 .remote .grid[data-columns="3"] { --deck-columns: 3; }
 .remote .grid[data-columns="4"] { --deck-columns: 4; }
 .remote .grid[data-columns="5"] { --deck-columns: 5; }
+.remote .grid[data-columns="6"] { --deck-columns: 6; }
+.remote .deck-measure { position: absolute; inset: 0; visibility: hidden; pointer-events: none; }
 .remote .tile, [data-density="compact"] .remote .tile { min-height: 0; }
 .remote .tile strong { font-size: .86rem; }
 .remote .tile .ico { margin: 0; }
 .dock button, .pager .icon-button { min-width: 2.75rem; min-height: 2.75rem; }
-[data-density="compact"] .remote .grid { grid-auto-rows: 3.9rem; }
-@media (orientation: landscape) {
+
+@media (min-width: 36rem) {
+  .remote { --deck-max-columns: 4; --deck-max-rows: 6; --deck-tile-width: 9rem; }
+}
+@media (min-width: 60rem) {
+  [data-mode="remote"] main { padding: clamp(.75rem, 1.6vw, 1.35rem); }
+  .remote { --deck-max-columns: 6; --deck-tile-width: 9.75rem; }
+  .remote .overview { padding: .8rem 1rem; }
+  .remote .tile strong { font-size: .95rem; }
+}
+@media (min-width: 36rem) and (min-height: 19rem) and (min-aspect-ratio: 6/5) {
   [data-mode="remote"] .shell {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-rows: auto minmax(0, 1fr);
-    max-width: 66rem;
   }
   [data-mode="remote"] .masthead { grid-column: 1 / -1; }
-  [data-mode="remote"] main { width: 100%; }
-  .remote { --deck-max-columns: 5; }
-  .remote .grid { grid-auto-columns: 7.85rem; }
-  .remote .session { flex-direction: row; gap: .35rem; }
-  .remote .overview { padding-block: .42rem; }
   .dock {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    min-width: 4.4rem;
-    padding: .35rem;
-    border-top: 0;
-    border-inline-start: 1px solid var(--line);
+    align-self: center;
+    min-width: 4.55rem;
   }
-  .dock button { min-height: 2.75rem; }
 }
-@media (orientation: landscape) and (max-height: 420px) {
+@media (min-width: 36rem) {
+  .remote .session { flex-direction: row; gap: .35rem; }
+}
+@media (max-height: 30rem) {
   [data-mode="remote"] .masthead { padding-block: .24rem; }
   [data-mode="remote"] main { padding: .4rem .5rem; }
-  .remote { gap: .4rem; }
+  .remote { --deck-row-min: 3.85rem; --deck-tile-width: 7.5rem; gap: .4rem; }
+  [data-density="compact"] .remote { --deck-row-min: 3.3rem; }
+  .remote .overview { padding-block: .4rem; }
   .remote .overview-icon { width: 2rem; height: 2rem; }
   .remote .panel { padding: .42rem; gap: .35rem; }
-  .remote .grid { grid-auto-columns: 7rem; grid-auto-rows: 3.65rem; }
-  [data-density="compact"] .remote .grid { grid-auto-rows: 3.3rem; }
-  .remote .tile {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    align-content: center;
-    align-items: center;
-    gap: .1rem .35rem;
-    padding: .4rem;
-  }
-  .remote .tile .ico { grid-row: 1 / span 2; }
-  .remote .tile strong, .remote .tile small { grid-column: 2; }
+  .remote .tile .ico { width: 1.35rem; height: 1.35rem; }
 }
 @media (max-width: 350px) {
   [data-mode="remote"] .masthead { padding-inline: .42rem; gap: .25rem; }
@@ -434,7 +429,7 @@ main { width: min(100%, 69rem); padding: clamp(1rem, 3vw, 2rem); }
   [data-mode="remote"] main { padding-inline: .45rem; }
   .remote .overview { gap: .35rem; }
   .remote .overview-icon { display: none; }
-  .mast-actions { gap: .22rem; }
+  [data-mode="remote"] .mast-actions { gap: .22rem; }
 }
 
 /* The touch deck uses the same surfaces in both orientations. */
@@ -499,13 +494,6 @@ main { width: min(100%, 69rem); padding: clamp(1rem, 3vw, 2rem); }
 .pencil::before { content: "\f303"; }
 .moon::before { content: "\f186"; }
 .sun::before { content: "\f185"; }
-.remote .grid {
-  position: relative;
-  grid-auto-columns: 9rem;
-  grid-auto-rows: minmax(5rem, max-content);
-}
-[data-density="compact"] .remote .grid { grid-auto-rows: minmax(3.85rem, max-content); }
-.remote .deck-measure { position: absolute; inset: 0; visibility: hidden; pointer-events: none; }
 .remote .tile {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -554,7 +542,7 @@ main { width: min(100%, 69rem); padding: clamp(1rem, 3vw, 2rem); }
   backdrop-filter: blur(20px) saturate(150%);
   box-shadow: 0 .55rem 1.25rem var(--deck-shadow), inset 0 1px #ffffff38;
 }
-.dock button { min-width: 0; font-size: clamp(.64rem, 2.4vw, .78rem); border-radius: 1.05rem; padding-inline: .15rem; transition: transform .16s, background .2s, color .2s; }
+.dock button { min-width: 0; text-align: center; overflow-wrap: anywhere; font-size: clamp(.64rem, 2.4vw, .78rem); border-radius: 1.05rem; padding-inline: .15rem; transition: transform .16s, background .2s, color .2s; }
 .dock button:active { transform: scale(.94); }
 .dock button[aria-pressed="true"] { background: var(--accent); color: var(--deck-contrast); box-shadow: inset 0 1px #ffffff45; }
 .dock button[aria-pressed="true"] .ico { color: inherit; }
@@ -563,8 +551,10 @@ main { width: min(100%, 69rem); padding: clamp(1rem, 3vw, 2rem); }
   display: grid;
   grid-template-columns: 1fr;
   align-content: start;
+  min-height: 0;
   gap: .55rem;
   overflow: auto;
+  padding: .125rem;
 }
 .settings-panel fieldset, .density-field {
   min-width: 0;
@@ -591,17 +581,23 @@ main { width: min(100%, 69rem); padding: clamp(1rem, 3vw, 2rem); }
 [data-theme="light"] .primary { color: var(--deck-contrast); }
 [data-mode="remote"] #custom-dialog .dialog-head { margin-bottom: .35rem; }
 [data-mode="remote"] #custom-dialog .dialog-actions button { min-height: 2.75rem; }
-@media (orientation: portrait) and (min-height: 720px) {
-  [data-density="comfortable"] .remote .grid { grid-auto-rows: minmax(5.5rem, max-content); }
+
+@media (min-height: 45rem) {
+  [data-density="comfortable"] .remote { --deck-row-min: 5.5rem; }
 }
-@media (orientation: landscape) {
-  .dock { align-self: center; min-width: 4.55rem; margin: 0 .65rem 0 .12rem; border-inline-start: 1px solid var(--deck-rim); }
-  .remote .grid { grid-auto-columns: 9.1rem; grid-auto-rows: minmax(3.85rem, max-content); }
-  .settings-panel { grid-template-columns: 1fr 1.2fr; }
+@media (min-width: 36rem) and (min-height: 19rem) and (min-aspect-ratio: 6/5) {
+  .dock { margin: 0 .65rem 0 .12rem; }
+}
+@media (max-height: 21rem) {
+  .dock { gap: .08rem; padding: .22rem; }
+}
+@container (min-width: 34rem) {
+  .settings-panel { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); }
   .density-field { grid-column: 1 / -1; }
 }
-@media (orientation: landscape) and (max-height: 340px) {
-  .dock { gap: .08rem; padding: .22rem; }
+[data-mode="remote"] dialog {
+  max-width: calc(100% - max(.75rem, env(safe-area-inset-left)) - max(.75rem, env(safe-area-inset-right)));
+  max-height: calc(100dvh - max(1rem, env(safe-area-inset-top)) - max(1rem, env(safe-area-inset-bottom)));
 }
 @media (prefers-reduced-motion: reduce) {
   .remote .enter { animation: none; }

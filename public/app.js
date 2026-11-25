@@ -189,15 +189,16 @@ let pageSize = 0;
 
 let deckLayout;
 function fitDeck(grid, buttons) {
-  const { width, height } = grid.getBoundingClientRect();
-  const density = preferences.density;
-  const signature = JSON.stringify([width, height, density, buttons.map(({ label, detail }) => [label, detail])]);
+  const style = getComputedStyle(grid);
+  const width = grid.clientWidth - Number.parseFloat(style.paddingLeft) - Number.parseFloat(style.paddingRight);
+  const height = grid.clientHeight - Number.parseFloat(style.paddingTop) - Number.parseFloat(style.paddingBottom);
+  const gap = Number.parseFloat(style.gap);
+  const minWidth = Number.parseFloat(style.gridAutoColumns);
+  const maxColumns = Number(style.getPropertyValue('--deck-max-columns'));
+  const maxRows = Number(style.getPropertyValue('--deck-max-rows'));
+  const signature = JSON.stringify([width, height, gap, minWidth, maxColumns, maxRows, style.gridAutoRows,
+    buttons.map(({ label, detail }) => [label, detail])]);
   if (deckLayout?.signature !== signature) {
-    const style = getComputedStyle(grid);
-    const gap = Number.parseFloat(style.gap);
-    const minWidth = Number.parseFloat(style.gridAutoColumns);
-    const maxColumns = Number(style.getPropertyValue('--deck-max-columns'));
-    const maxRows = Number(style.getPropertyValue('--deck-max-rows'));
     const columns = Math.max(1, Math.min(buttons.length, maxColumns, Math.floor((width + gap) / (minWidth + gap))));
     const probe = document.createElement('div');
     probe.className = 'grid deck-measure';
@@ -228,6 +229,7 @@ function selectGroup(group) {
   page = 0;
   renderDeck(latestState);
   const grid = byId(group === 'settings' ? 'settings-panel' : group);
+  grid.scrollTop = 0;
   grid.classList.remove('enter');
   requestAnimationFrame(() => grid.classList.add('enter'));
 }
@@ -565,11 +567,16 @@ function setupUi() {
   for (const button of byId('dock').querySelectorAll('[data-group]')) {
     button.onclick = () => selectGroup(button.dataset.group);
   }
-  byId('previous-page').onclick = () => { page -= 1; renderDeck(latestState); };
-  byId('next-page').onclick = () => { page += 1; renderDeck(latestState); };
+  for (const [button, offset] of [['previous-page', -1], ['next-page', 1]]) {
+    byId(button).onclick = () => {
+      page += offset;
+      renderDeck(latestState);
+      byId(currentGroup).scrollTop = 0;
+    };
+  }
   if (!desktop) {
     const layout = new ResizeObserver(() => renderDeck(latestState));
-    layout.observe(byId('controls'));
+    for (const group of Object.keys(groups)) layout.observe(byId(group));
   }
   byId('address').onchange = () => void updatePair();
   byId('pair-retry').onclick = () => void updatePair();
